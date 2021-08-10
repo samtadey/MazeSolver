@@ -1,18 +1,18 @@
 state_score = {
     "blank": -5,
     "good": -3,
-    "dang": -10, 
-    "check": 5,
+    "dang": -8, 
+    "check": 20,
     "nogo": -200, #end loop
     "goal": 1000, #end loop
 }
 
-dis_metric = {
-    "blank": -2,
-    "good": -2,
-    "dang": -2,
-    "check": -2,
-}
+# dis_metric = {
+#     "blank": -2,
+#     "good": -2,
+#     "dang": -2,
+#     "check": -2,
+# }
 
 basic_state = [
     ["blank", "good", "dang", "nogo"],
@@ -64,12 +64,28 @@ complex_one_path = [
     ["nogo", "good", "good", "blank", "blank", "goal", "good", "nogo", "nogo", "nogo"],
 ]
 
+complex_one_path_good_test = [
+    ["blank", "dang", "nogo", "good", "nogo", "nogo", "nogo", "nogo", "nogo", "nogo"],
+    ["dang", "check", "good", "check", "good", "dang", "blank", "blank", "blank", "nogo"],
+    ["nogo", "good", "blank", "good", "dang", "blank", "dang", "blank", "dang", "nogo"],
+    ["nogo", "dang", "good", "check", "nogo", "nogo", "nogo", "blank", "blank", "nogo"],
+    ["nogo", "dang", "blank", "good", "blank", "good", "blank", "blank", "blank", "nogo"],
+    ["nogo", "dang", "good", "check", "good", "check", "good", "dang", "blank", "nogo"],
+    ["nogo", "dang", "dang", "good", "blank", "good", "dang", "dang", "dang","nogo"],
+    ["nogo", "blank", "blank", "blank", "good", "check", "good", "blank", "dang", "nogo"],
+    ["nogo", "blank", "nogo", "good",  "blank", "good", "blank", "nogo", "nogo", "nogo"],
+    ["nogo", "blank", "blank", "blank", "good", "goal", "good", "nogo", "nogo", "nogo"],
+]
+
 #up,down,left,right
 q_table = {
     "blank": {"up": 0, "down": 0, "right": 0, "left": 0},
     "good" : {"up": 0, "down": 0, "right": 0, "left": 0},
     "dang" : {"up": 0, "down": 0, "right": 0, "left": 0},
-    "check" : {"up": 0, "down": 0, "right": 0, "left": 0},
+    "check": {"up": 0, "down": 0, "right": 0, "left": 0},
     "nogo" : {"up": 0, "down": 0, "right": 0, "left": 0},
     "goal" : {"up": 0, "down": 0, "right": 0, "left": 0},
 }
+
+
+

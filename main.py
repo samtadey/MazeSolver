@@ -1,6 +1,7 @@
 import random
 import numpy as np
-from grid import basic_state, basic_state2, tradeoff_state, complex_state, complex_one_path, state_score, q_table
+import copy
+from grid import basic_state, basic_state2, tradeoff_state, complex_state, complex_one_path, complex_one_path_good_test, state_score, q_table
 
 
 def createOccuranceGrid(stategrid):
@@ -19,8 +20,12 @@ def createOccuranceGrid(stategrid):
 
     return grid
 
+# def resetStateMatrix(template_matrix):
+#     for i in range(len(state_matrix)):
+#         for j in range(len(state_matrix[0])):
+#             state_matrix[i][j] = template_matrix[i][j]
 
-def getState(pos_x, pos_y):
+def getState(state_matrix, pos_x, pos_y):
     if (pos_x < 0 or pos_x >= len(state_matrix)):
         return None
     if (pos_y < 0 or pos_y >= len(state_matrix[0])):
@@ -61,12 +66,10 @@ def chooseStateAction(stateaction,randomrate):
     israndom = random.random()
     #random choice
     if (israndom < threshold):
-        print("random")
         choice = random.randint(0, len(stateaction) - 1)
         return stateaction[choice]["state"], stateaction[choice]["action"]
     #calculated choice
     else:
-        print("greedy")
         #max q value?
         max = float("-inf")
         for i in range(len(stateaction)):
@@ -87,7 +90,7 @@ def performAction(x, y, state, curr_score):
 
 #
 #                
-def getDelta(curr_score, pos_x, pos_y, future_states):
+def getDelta(state_matrix, curr_score, pos_x, pos_y, future_states):
     #get current
     discount = 0.85 #not sure
     current = state_matrix[pos_x][pos_y]
@@ -105,20 +108,20 @@ def getDelta(curr_score, pos_x, pos_y, future_states):
 
     return reward + (discount * max) - curr_score
 
-def updateQTable(state, action, pos_x, pos_y):
+def updateQTable(state_matrix, state, action, pos_x, pos_y):
      alpha = 0.6
      curr_score = q_table[state][action]
-     future_states = getFutureStates(pos_x,pos_y)
+     future_states = getFutureStates(state_matrix, pos_x,pos_y)
 
-     return curr_score + (alpha * getDelta(curr_score, pos_x, pos_y, future_states))
+     return curr_score + (alpha * getDelta(state_matrix, curr_score, pos_x, pos_y, future_states))
 
 #keep order
-def getFutureStates(pos_x, pos_y):
+def getFutureStates(state_matrix, pos_x, pos_y):
     future_states = []
-    left = getState(pos_x, pos_y-1)
-    right = getState(pos_x, pos_y+1)
-    up = getState(pos_x-1, pos_y)
-    down = getState(pos_x+1, pos_y)
+    left = getState(state_matrix, pos_x, pos_y-1)
+    right = getState(state_matrix, pos_x, pos_y+1)
+    up = getState(state_matrix, pos_x-1, pos_y)
+    down = getState(state_matrix, pos_x+1, pos_y)
 
     #possible actions array
     future_states = []
@@ -129,7 +132,7 @@ def getFutureStates(pos_x, pos_y):
 
     return future_states
 
-def runMazeSolver(x,y,max_steps, randomrate, initscore):
+def runMazeSolver(state_matrix, x,y,max_steps, randomrate, initscore):
     pos_x = x
     pos_y = y
     score = initscore
@@ -137,46 +140,58 @@ def runMazeSolver(x,y,max_steps, randomrate, initscore):
     record = []
 
     for step in range(max_steps):
-        print("starting step")
         cur_state = state_matrix[pos_x][pos_y]
 
         if (cur_state == "goal" or cur_state == "nogo"):
             break
 
+        # print("Before:" + state_matrix[pos_x][pos_y])
+
+        #check states can only be used once
+        if (cur_state == "check"):
+            state_matrix[pos_x][pos_y] = "blank"
+
+        # print("After:" + state_matrix[pos_x][pos_y])
+
         #keep order
         #possible actions
-        possible_states = getFutureStates(pos_x, pos_y)
+        possible_states = getFutureStates(state_matrix, pos_x, pos_y)
 
         #choose action 
         stateaction = pairStateAction(possible_states)
         state, action = chooseStateAction(stateaction, randomrate)
+
         upd_x,upd_y = getActionPos(pos_x, pos_y, action)
         #update current score and position
         pos_x, pos_y, score = performAction(upd_x, upd_y, state, score)
+
         #seems backwards but its not
         record.append("Step: " + str(step) + ", " + str(pos_y) + " " + str(pos_x) + " " + state)
 
         #update q_table
-        q_table[state][action] = updateQTable(state, action, pos_x, pos_y)
+        q_table[state][action] = updateQTable(state_matrix, state, action, pos_x, pos_y)
 
     return score, record
 
 #set the matrix to navigate through
-state_matrix = basic_state
+#state_matrix = complex_one_path
 solver_tries = 100
 
-test = createOccuranceGrid(state_matrix)
+# test = createOccuranceGrid(state_matrix)
+# print(test)
 
-print(test)
+for i in range(solver_tries):
+    print("Try: " + str(i))
+    #print(complex_one_path_good_test)
+    matrix = copy.deepcopy(complex_one_path_good_test)
+    score, results = runMazeSolver(matrix,0,0,1000,0.4,100)
+    #print(state_matrix)
+    print(results)
+    print(score)
 
-# for i in range(solver_tries):
-#     print("Try: " + str(i))
-#     score, results = runMazeSolver(0,0,1000,0.4,100)
-#     print(results)
-#     print(score)
-
-# #final informed try
-# score, results = runMazeSolver(0,0,100,0,100)
-# print(results)
-# print(score)
-# print(q_table)
+#final informed try
+matrix = copy.deepcopy(complex_one_path_good_test)
+score, results = runMazeSolver(matrix,0,0,100,0,100)
+print(results)
+print(score)
+print(q_table)
