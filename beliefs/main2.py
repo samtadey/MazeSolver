@@ -1,6 +1,6 @@
 import random
 import copy
-from environment import two, three, four, five, build_q_table, buildStateSpace
+from environment import two, three, four, five, test_q_table_three, test_q_table_four, build_q_table, buildStateSpace, generateAllStates, generateModQTable
 from generate_scoring import doHamming, generateStateScore, generateStateOrder, generateStateScore, generateLevelToOrder, generateDiffReward 
 
 ##
@@ -22,19 +22,20 @@ def createChoices(visited, allstates):
             choices.append(state)
     return choices
 
-def chooseNext(state, q_table, choices, currentstate):
+def chooseNext(state, q_table, choices, currentstate, level):
     choice = None
     max = float("-inf")
 
     for state in choices:
-        q_val = q_table[state][currentstate]
+        #q_val = q_table[state][currentstate]
+        q_val = q_table[state][level]
         if (q_val > max):
             max = q_val
             choice = state
 
     return choice
 
-def chooseNextState(state, q_table, choices, currentstate, randomrate):
+def chooseNextState(state, q_table, choices, currentstate, randomrate, level):
     israndom = random.random()
     #random choice
     if (israndom < randomrate):
@@ -46,15 +47,15 @@ def chooseNextState(state, q_table, choices, currentstate, randomrate):
         return choices[choice]
     #calculated choice
     else:
-        return chooseNext(state, q_table, choices, currentstate)
+        return chooseNext(state, q_table, choices, currentstate, level)
 
 
-def calcRewardTwo(state_score, state_score_order, state_score_diff_reward, current, tree_level):
+def calcRewardTwo(state_score, state_score_order, state_score_diff_reward, current, level):
     reward = state_score[current]
     #get tree level
     #map level to order rank
     place = state_score_order[current]
-    level = level_to_order[tree_level]
+    #level = level_to_order[tree_level]
     print("Expected Level: " + str(place) + " - Placed At: " + str(level))
 
     leveldiff = abs(place - level)
@@ -67,20 +68,23 @@ def getDeltaTwo(state_score, state_score_order, state_score_diff_reward, current
     discount = 0.75 #not sure
     #calculate reward
     reward = calcRewardTwo(state_score, state_score_order, state_score_diff_reward, current, level)
-    max = 0
+    max = 1
 
-    for state in choices:
-        if (q_table[state][current] > max):
-            max = q_table[state][current]
+    # for state in choices:
+    #     if q_table[state][level] > max:
+    #         max = q_table[state][level] 
+    #     # if (q_table[state][current] > max):
+    #     #     max = q_table[state][current]
 
     return reward + (discount * max) - curr_score
 
 
 def updateQTableTwo(state_score, state_score_order, state_score_diff_reward, curr, prev, level, choices):
-     alpha = 0.6
-     curr_score = q_table[curr][prev]
+    alpha = 0.6
+    #curr_score = q_table[curr][prev]
+    curr_score = q_table[curr][level]
 
-     return curr_score + (alpha * getDeltaTwo(state_score, state_score_order, state_score_diff_reward, curr, curr_score, level, choices))
+    return curr_score + (alpha * getDeltaTwo(state_score, state_score_order, state_score_diff_reward, curr, curr_score, level, choices))
 
 def runMazeSolverTwo(allstates, state_score, state_score_order, state_score_diff_reward, statespace, randomrate, initscore):
     score = initscore
@@ -91,9 +95,10 @@ def runMazeSolverTwo(allstates, state_score, state_score_order, state_score_diff
     nextstate = None
     level = 1
     #fix
-    while True:
+    while len(visited) < len(allstates):
+        converted_level = level_to_order[level]
         choices = createChoices(visited, allstates)
-        nextstate = chooseNextState(statespace, q_table, choices, prev, randomrate)
+        nextstate = chooseNextState(statespace, q_table, choices, prev, randomrate, converted_level)
         #next choices
         if nextstate == None:
             break
@@ -106,7 +111,9 @@ def runMazeSolverTwo(allstates, state_score, state_score_order, state_score_diff
         #visited states
         visited.append(str(nextstate))
         #update q_table
-        q_table[nextstate][prev] = updateQTableTwo(state_score, state_score_order, state_score_diff_reward, nextstate, prev, level, choices)
+
+        q_table[nextstate][converted_level] = updateQTableTwo(state_score, state_score_order, state_score_diff_reward, nextstate, prev, converted_level, choices)
+        #q_table[nextstate][prev] = updateQTableTwo(state_score, state_score_order, state_score_diff_reward, nextstate, prev, level, choices)
         #advance tree
         #if none return
         #state = advanceTree(state, next)
@@ -118,12 +125,12 @@ def runMazeSolverTwo(allstates, state_score, state_score_order, state_score_diff
 #traditional method
 def basicMethodTwo(allstates, tree, q_table, state_score, state_score_order, state_score_diff_reward):
 
-    solver_tries = 100
+    solver_tries = 1000
     #matrix = {'start': {}}
     for i in range(solver_tries):
         print("Try: " + str(i))
         #reinit choices
-        score, results = runMazeSolverTwo(allstates, state_score, state_score_order, state_score_diff_reward, tree, 0.3, 100)
+        score, results = runMazeSolverTwo(allstates, state_score, state_score_order, state_score_diff_reward, tree, 0.5, 100)
 
     print(q_table)
     print("test")
@@ -132,17 +139,18 @@ def basicMethodTwo(allstates, tree, q_table, state_score, state_score_order, sta
     print(results)
     print(score)
 
-states = three
+states = generateAllStates(8)
 #create members
-q_table = build_q_table(states)
+#q_table = build_q_table(states)
+q_table = generateModQTable(states, 8)
 state = buildStateSpace(states)
 
 #change q_table
 #change diff rewards assignment
 
-sent_arr2 = ["000"]
+sent_arr = ["00000000", "00000100", "11001010"]
 
-hammingresult = doHamming(states, sent_arr2)
+hammingresult = doHamming(states, sent_arr)
 state_score = generateStateScore(hammingresult)
 level_to_order = generateLevelToOrder(hammingresult)
 state_score_order = generateStateOrder(hammingresult)
