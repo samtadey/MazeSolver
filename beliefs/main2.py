@@ -139,16 +139,16 @@ def basicMethodTwo(allstates, tree, q_table, state_score, state_score_order, sta
     print(results)
     print(score)
 
-states = generateAllStates(8)
+states = generateAllStates(4)
 #create members
 #q_table = build_q_table(states)
-q_table = generateModQTable(states, 8)
+q_table = generateModQTable(states, 4)
 state = buildStateSpace(states)
 
 #change q_table
 #change diff rewards assignment
 
-sent_arr = ["00000000", "00000100", "11001010"]
+sent_arr = ["0000", "0100", "1000"]
 
 hammingresult = doHamming(states, sent_arr)
 state_score = generateStateScore(hammingresult)

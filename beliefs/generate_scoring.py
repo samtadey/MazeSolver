@@ -158,5 +158,3 @@ def generateDiffReward(hammingset):
 
 
 
-
-
