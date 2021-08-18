@@ -139,6 +139,12 @@ def basicMethodTwo(allstates, tree, q_table, state_score, state_score_order, sta
     print(results)
     print(score)
 
+
+
+##
+## Run Reinforced Hamming Learner
+##
+
 states = generateAllStates(8)
 #create members
 #q_table = build_q_table(states)

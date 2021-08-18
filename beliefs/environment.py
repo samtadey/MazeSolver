@@ -65,6 +65,7 @@ test_q_table_three = {
     "111": {1: 0, 2: 0, 3: 0, 4: 0},
 }
 
+
 {
     '000': {1: 0, 2: 0, 3: 0, 4: 0}, 
     '001': {1: 0, 2: 0, 3: 0, 4: 0}, 
@@ -176,10 +177,5 @@ def build_q_table(states):
     return q_table
 
 
-test = generateAllStates(5)
-print(test)
-
-test2 = generateModQTable(test, 5)
-print(test2)
 
 
